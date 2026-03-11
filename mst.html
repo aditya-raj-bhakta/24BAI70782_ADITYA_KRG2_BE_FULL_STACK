@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Form + Dynamic List</title>
+	</head>
+	<body>
+		<h1>Create Post</h1>
+
+		<form id="postForm">
+			<div>
+				<label for="title">Title</label>
+			</div>
+			<div>
+				<input id="title" name="title" type="text" required />
+			</div>
+
+			<div>
+				<label for="body">Body</label>
+			</div>
+			<div>
+				<textarea id="body" name="body" rows="5" required></textarea>
+			</div>
+
+			<button type="submit">Submit</button>
+			<p id="postStatus" aria-live="polite"></p>
+		</form>
+
+		<hr />
+
+		<h1>Add and Remove List Items Dynamically</h1>
+
+		<div>
+			<label for="itemInput">Item</label>
+			<input id="itemInput" type="text" />
+			<button id="addItemBtn" type="button">Add Item</button>
+			<button id="removeLastItemBtn" type="button">Remove Last Item</button>
+		</div>
+
+		<ul id="itemList"></ul>
+
+		<script>
+			const postForm = document.getElementById('postForm');
+			const titleInput = document.getElementById('title');
+			const bodyInput = document.getElementById('body');
+			const postStatus = document.getElementById('postStatus');
+
+			postForm.addEventListener('submit', async (event) => {
+				event.preventDefault();
+				postStatus.textContent = '';
+
+				const payload = {
+					title: titleInput.value,
+					body: bodyInput.value,
+				};
+
+				try {
+					const response = await fetch('/posts', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify(payload),
+					});
+
+					if (!response.ok) {
+						throw new Error(`Request failed (${response.status})`);
+					}
+
+					postStatus.textContent = 'Success: data submitted.';
+					postForm.reset();
+				} catch (error) {
+					postStatus.textContent = 'Error: could not submit data.';
+				}
+			});
+
+			const itemInput = document.getElementById('itemInput');
+			const addItemBtn = document.getElementById('addItemBtn');
+			const removeLastItemBtn = document.getElementById('removeLastItemBtn');
+			const itemList = document.getElementById('itemList');
+
+			addItemBtn.addEventListener('click', () => {
+				const value = itemInput.value.trim();
+				if (!value) return;
+
+				const li = document.createElement('li');
+				li.textContent = value;
+				itemList.appendChild(li);
+
+				itemInput.value = '';
+				itemInput.focus();
+			});
+
+			removeLastItemBtn.addEventListener('click', () => {
+				const lastItem = itemList.lastElementChild;
+				if (lastItem) {
+					lastItem.remove();
+				}
+			});
+		</script>
+	</body>
+</html>
